@@ -1,2 +1,2 @@
 # LionLobsterEmpire
-asdfasdf
+Code Repository for various projects
