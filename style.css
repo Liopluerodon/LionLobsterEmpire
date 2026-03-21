@@ -1,0 +1,7 @@
+#character {
+    position: absolute;
+    width: 42px;
+    height: 42px;
+    background: red;
+    border-radius: 50%;
+}
