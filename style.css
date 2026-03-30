@@ -1,7 +1,55 @@
-#character {
+body {
+  margin: 0px;
+  padding: 0px;
+  font-family: monospace;
+}
+
+#character{
     position: absolute;
     width: 42px;
     height: 42px;
     background: red;
-    border-radius: 50%;
+}
+
+#intro{
+    position: fixed;
+    inset: 0;
+    background: white;
+    overflow: hidden;
+    z-index: 1000;
+}
+
+#lobster{
+    color: #FF3B3F;
+    position: absolute;
+    top: 35%;
+    transform: translateY(-50%);
+    font-size: 60px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+#lion{
+    color: goldenrod;
+    position: absolute;
+    top: 65%;
+    transform: translateY(-50%);
+    font-size: 60px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.introBg {
+    position: absolute;
+    top: 0;
+    width: 55vw;
+    height: 100vh;
+}
+
+#lobsterBg {
+    background:#D9D9D9;
+}
+
+#lionBg {
+    background: #D9D9D9;
 }
