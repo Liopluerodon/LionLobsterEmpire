@@ -69,10 +69,6 @@ function updateIntro() {
 
 
 
-
-
-
-
 function recordKeyDown(e) {
     switch (e.code) {
         case "ArrowDown":
@@ -124,11 +120,10 @@ function recordKeyUp(e) {
 addEventListener("keyup", recordKeyUp);
 
 let grav = -0.1 //Value for gravitational acceleration
-let accel = grav; //Vertical Signed Acceleration of player
+let accel = [0, grav]; //Vertical Signed Acceleration of player
 let jumpHeight = 5; //Initial Velocity from Jump 
 let speed = 2;
 let canJump = false; 
-let floor = -300;
 
 //Position refers to top left corner
 let character = {
@@ -148,31 +143,55 @@ let keysDown = {
     down: false
 };
 
-const debugXaxis = document.createElement("div")
-debugXaxis.style.position = "absolute"
-debugXaxis.style.left = "0px"
-debugXaxis.style.width = "800px"
-debugXaxis.style.height = "2px"
-debugXaxis.style.top = "400px"
-debugXaxis.style.backgroundColor = "white"
-document.body.appendChild(debugXaxis)
+blockCount = 0;
+const blockDict = new Map();
 
-const debugFloor = document.createElement("div")
-debugFloor.style.position = "absolute"
-debugFloor.style.left = "0px"
-debugFloor.style.width = "800px"
-debugFloor.style.height = "2px"
-debugFloor.style.top = 400-floor+"px"
-debugFloor.style.backgroundColor = "white"
-document.body.appendChild(debugFloor)
+function block(x, y, w, h) {
+    if ( !blockDict.has(`${x}, ${y}`) ) {
+        let newBlock = document.createElement("div");
+        blockDict.set(`${x}, ${y}`, newBlock)
+        newBlock.className = "block";
+        newBlock.style.left = x+"px"
+        newBlock.style.width = w+"px"
+        newBlock.style.height = h+"px"
+        newBlock.style.top = 400-y+"px"
+        document.body.appendChild(newBlock)
+    }
 
-const floorBlock = document.createElement("div")
-floorBlock.className = "block"
-floorBlock.style.left = "0px"
-floorBlock.style.width = "1300px"
-floorBlock.style.height = "40px"
-floorBlock.style.top = 400-(floor-character.size-3)+"px"
-document.body.appendChild(floorBlock)
+    let px = character.p[0]
+    let py = character.p[1] 
+    let pvx = character.v[0]
+    let pvy = character.v[1]
+    let pw = character.size
+    let ph = character.size
+    if (px + pw > x && px < x + w && py - ph < y && py > y - h) {
+
+        //Horizontal Collision
+        if(px + pw > x && px < x + w && (py - pvy) - ph < y && (py - pvy) > y - h) {
+            if (pvx > 0) {character.p[0] = x-pw;}
+            else if (pvx < 0) {character.p[0] = x+w;}
+
+        }
+
+        //Vertical Collision
+        if((px - pvx) + pw > x && (px - pvx) < x + w && py - ph < y && py > y - h) {
+            if (pvy < 0) {
+                character.v[1] = 0;
+                accel[1] = 0;
+                canJump = true;
+                character.p[1] = y + ph;
+            }
+
+            else {
+                accel[1] = grav;
+                character.v[1] = 0;
+                character.p[1] =  y - h;
+            }
+        }
+
+    }
+}
+
 
 
 
@@ -183,28 +202,23 @@ function draw() {
         return;
     }
 
-    //if (keysDown.down) { character.v[1] = -speed; }
-    //if (keysDown.up) { character.v[1] = speed; }
+    //Speed Affectors
     if (keysDown.left) { character.v[0] = -speed; }
     if (keysDown.right) { character.v[0] = speed; }
     if (keysDown.up && canJump) { character.v[1] = jumpHeight; canJump = false;}
 
-    accel = grav;
-    character.v[1]+=accel;
+    accel = [0, grav];
+    character.v[1]+=accel[1];
 
     character.p[0] += character.v[0];
     character.p[1] += character.v[1];
 
 
-
-    if (character.p[1]<floor) {
-        character.v[1] = 0;
-        character.p[1] = floor;
-        accel = 0;
-        canJump = true;
-    }
-
-
+    //Collision Checkers
+    block(20, -160, 100, 40)
+    block(220, -160, 100, 40)
+    block(220, -60, 100, 40)
+    block(0, -220, 500, 50)
 
     character.element.style.left = character.p[0] + "px";
     character.element.style.top = 400-character.p[1] + "px";
