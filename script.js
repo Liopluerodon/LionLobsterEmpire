@@ -31,19 +31,19 @@ const map = [
     "______________________________________",
     "_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa_",
     "_a__________________________________a_",
-    "_a__________________________________a_",
-    "_a__________________________________a_",
-    "_a__________________________________a_",
-    "_a__________________________________a_",
-    "_a__________________________________a_",
-    "_a__________________________________a_",
-    "_a__________________________________a_",
-    "_a__________________________________a_",
-    "_a__________________________________a_",
-    "_a__________________________________a_",
-    "_a__________________________________a_",
-    "_a__________________________________a_",
-    "_a____________________a_____________a_",
+    "_a___o__oo_____________o__o_________a_",
+    "_a__o_o_o_o____________o_____o__oo__a_",
+    "_a__ooo_o_o____________o__o_o_o_o_o_a_",
+    "_a__o_o_oo_____________oo_o__o__o_o_a_",
+    "_a____________axaaaax_______________a_",
+    "_a_________a___________a____________a_",
+    "_a__________x_________x_____________a_",
+    "_a___________a___a___a______________a_",
+    "_a___ooo_____________________o_o____a_",
+    "_a_________o____aax_________________a_",
+    "_aoo________________________o___o___a_",
+    "_a___________ooaxxxa_________ooo____a_",
+    "_a___ooo______________a_____________a_",
     "_a________a___________a_____________a_",
     "_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa_",
 ]
@@ -143,15 +143,16 @@ let grav = 0.2;
 let accel = [0, grav];
 let jumpHeight = 7;
 let speed = 2;
-let canJump = false; 
+let spawn = [300, 800]
 
 let character = {
-    p: [350, 350],
+    p: [spawn[0], spawn[1]],
     v: [0, 0],
     element: document.getElementById("character"),
     size: 50
 };
 
+let collidingVertically = false; //determines if the player can jump
 character.element.style.width = character.size+"px"
 character.element.style.height = character.size+"px"
 
@@ -162,9 +163,7 @@ let keysDown = {
     down: false
 };
 
-blockCount = 0;
 const blockDict = new Map();
-
 function block(x, y, w, h) {
     if ( !blockDict.has(`${x}, ${y}`) ) {
         let newBlock = document.createElement("div");
@@ -196,7 +195,7 @@ function block(x, y, w, h) {
     if ((px - pvx) + pw > x && (px - pvx) < x + w && py < y + h && py + ph > y) {
         if (pvy > 0) {
             character.v[1] = 0;
-            canJump = true;
+            collidingVertically = true;
             character.p[1] = y - ph;
         } else if (pvy < 0) {
             character.v[1] = 0;
@@ -205,6 +204,78 @@ function block(x, y, w, h) {
     }
 
     }
+}
+
+const invisiblockDict = new Map();
+function invisiblock(x, y, w, h) {
+    if ( !invisiblockDict.has(`${x}, ${y}`) ) {
+        let newBlock = document.createElement("div");
+        invisiblockDict.set(`${x}, ${y}`, newBlock)
+        newBlock.className = "invisiblock";
+        newBlock.style.left = x+"px"
+        newBlock.style.width = w+"px"
+        newBlock.style.height = h+"px"
+        newBlock.style.top = y+"px"
+        document.body.appendChild(newBlock)
+    }
+
+    let px = character.p[0]
+    let py = character.p[1] 
+    let pvx = character.v[0]
+    let pvy = character.v[1]
+    let pw = character.size
+    let ph = character.size
+    if (px + pw > x && px < x + w && py - ph < y && py > y - h) {
+
+    if (px + pw > x && px < x + w && (py - pvy) < y + h && (py - pvy) + ph > y) {
+        if (pvx > 0) {
+            character.p[0] = x - pw;
+        } else if (pvx < 0) {
+            character.p[0] = x + w;
+        }
+    }
+
+    if ((px - pvx) + pw > x && (px - pvx) < x + w && py < y + h && py + ph > y) {
+        if (pvy > 0) {
+            character.v[1] = 0;
+            collidingVertically = true;
+            character.p[1] = y - ph;
+        } else if (pvy < 0) {
+            character.v[1] = 0;
+            character.p[1] = y + h;
+        }
+    }
+    }
+}
+
+const killbrickDict = new Map();
+function killbrick(x, y, w, h) {
+    if ( !killbrickDict.has(`${x}, ${y}`) ) {
+        let newBlock = document.createElement("div");
+        killbrickDict.set(`${x}, ${y}`, newBlock)
+        newBlock.className = "killbrick";
+        newBlock.style.left = x+"px"
+        newBlock.style.width = w+"px"
+        newBlock.style.height = h+"px"
+        newBlock.style.top = y+"px"
+        document.body.appendChild(newBlock)
+    }
+
+    let px = character.p[0]
+    let py = character.p[1] 
+    let pvx = character.v[0]
+    let pvy = character.v[1]
+    let pw = character.size
+    let ph = character.size
+    if (px + pw > x && px < x + w && py - ph < y && py > y - h) {
+        die();
+    }
+}
+
+function die() {
+    character.v = [0, 0];
+    character.p[0] = spawn[0];
+    character.p[1] = spawn[1];
 }
 
 function draw() {
@@ -219,10 +290,11 @@ function draw() {
     if (keysDown.right) { 
         character.v[0] = speed; 
     }
-    if (keysDown.up && canJump) { 
-        character.v[1] = -jumpHeight; 
-        canJump = false;
+    if (keysDown.up && collidingVertically) { 
+        character.v[1] = -jumpHeight;
     }
+
+    collidingVertically = false;
 
     accel = [0, grav];
     character.v[1]+=accel[1];
@@ -237,10 +309,16 @@ function draw() {
             const tile = line[column];
             if(tile === "a"){
                 block(column*character.size,row*character.size,character.size,character.size);
-
+            }
+            if(tile === "x"){
+                killbrick(column*character.size,row*character.size,character.size,character.size);
+            }
+            if(tile === "o"){
+                invisiblock(column*character.size,row*character.size,character.size,character.size);
             }
         }
     }
+
 
     character.element.style.left = character.p[0] + "px";
     character.element.style.top = character.p[1] + "px";
