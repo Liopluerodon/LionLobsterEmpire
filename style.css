@@ -60,3 +60,13 @@ body {
     position: absolute;
     background: black;
 }
+
+.invisiblock {
+    position: absolute;
+    background: rgb(0,0,0,0.01);
+}
+
+.killbrick {
+    position: absolute;
+    background: red;
+}
