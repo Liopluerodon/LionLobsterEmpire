@@ -139,7 +139,7 @@ function recordKeyUp(e) {
 }
 addEventListener("keyup", recordKeyUp);
 
-let grav = 0.2;
+let grav = 0.15;
 let accel = [0, grav];
 let jumpHeight = 7;
 let speed = 2;
